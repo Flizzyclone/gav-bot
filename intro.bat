@@ -1,0 +1,2 @@
+node intro.js
+pause
