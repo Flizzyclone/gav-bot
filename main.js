@@ -7,7 +7,7 @@ const bot = new Discord.Client({
 
 const fs = require('fs')
 
-const config = require('./config.json')
+const config = require('./config.json');
 
 const suggestions = require('./suggestions');
 

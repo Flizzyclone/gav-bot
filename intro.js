@@ -5,6 +5,8 @@ const bot = new Discord.Client({
     ws: { intents: ["GUILD_MEMBERS","GUILDS","DIRECT_MESSAGES","DIRECT_MESSAGE_REACTIONS","GUILD_MESSAGES","GUILD_MESSAGE_REACTIONS"] }
 });
 
+const config = require('./config.json');
+
 const delay = (msec) => new Promise((resolve) => setTimeout(resolve, msec));
 
 let outputchannel;
@@ -792,4 +794,4 @@ async function introstage12(member) {
 }
 
 
-bot.login("");
+bot.login(config.token);
