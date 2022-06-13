@@ -16,7 +16,7 @@ bot.on("ready", async () => {
 bot.on("message", async (msg) => {
     var args = msg.content.split(" ");
     if (msg.channel.type == 'dm' && msg.author.id !== config.clientId) {
-        let GAV = bot.guilds.cache.get(config.roles.guildId);
+        let GAV = await bot.guilds.cache.get(config.roles.guildId);
         if (GAV.member(msg.author).roles.cache.has(config.roles.newMember) == false) {
             let date = new Date();
             let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
