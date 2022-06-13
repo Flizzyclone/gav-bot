@@ -1,15 +1,13 @@
 //CORE LIBRARIES
 //discord
 const Discord = require("discord.js");
-const bot = new Discord.Client({
-    ws: { intents: ["GUILD_MEMBERS","GUILDS","DIRECT_MESSAGES","DIRECT_MESSAGE_REACTIONS","GUILD_MESSAGES","GUILD_MESSAGE_REACTIONS"] }
-});
+const bot = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS] });
 
 const config = require('./config.json');
 
 const delay = (msec) => new Promise((resolve) => setTimeout(resolve, msec));
 
-let outputchannel;
+let outputChannel;
 
 //intro DB
 const Sequelize = require('sequelize');
@@ -183,7 +181,7 @@ const acceptedpronoun = ['HE/HIM','SHE/HER','THEY/THEM']
 
 bot.on("ready", async () => {
     console.log(`Logged in as ${bot.user.tag}!`);
-    outputchannel = await bot.channels.cache.get('764515162052362260')
+    outputChannel = await bot.channels.cache.get('764515162052362260')
     membersettings.sync();
 });
 
@@ -194,7 +192,7 @@ bot.on("message", async (msg) => {
             if (args[1] == 'svm' && (msg.channel.id == '764515161825345622' || msg.channel.id == '764515162052362260' || msg.channel.id == '764515161825345621' || msg.channel.id == '764515161825345624')) {
                 let memtosend = msg.guild.member(msg.mentions.users.first());
                 memberverification(memtosend);
-                msg.channel.send(msgsentverify);
+                msg.channel.send({embeds:[msgsentverify]});
             }
     }
     switch (args[0]) {
@@ -214,7 +212,7 @@ async function memberverification(member) {
     await delay(500);
     let directmess = await member.createDM();
     try {
-        await directmess.send(verifmsgintro);
+        await directmess.send({embeds:[verifmsgintro]});
     } catch (error) {
         console.log('cant send DM');
         console.log(error.message);
@@ -222,21 +220,21 @@ async function memberverification(member) {
             let manualverifmsg = new Discord.Message
             let channel = bot.channels.cache.get('764515162052362269')
             manualverifmsg.content = 'Hey <@!' + member.user.id + "> due to your privacy settings, you are unable to proceed with bot verification. If you would prefer to use bot verification, please turn `Allow direct messages from server members` on in `Privacy & Safety` and then DM `!restart` to <@!722923917756465243>. Otherwise, follow the pinned message for manual verification."
-            channel.send(manualverifmsg);
-            outputchannel.send(`Couldn't send initial verification message to ${msg.author.name} because of their privacy settings.`);
+            channel.send({embeds:[manualverifmsg]});
+            outputChannel.send({content:`Couldn't send initial verification message to ${msg.author.name} because of their privacy settings.`});
         } else {
             let channel = bot.channels.cache.get('764515162052362260');
-            channel.send(error.message);
-            outputchannel.send(`Unknown error sending initial DM message to ${msg.author.name}`);
+            channel.send({content:error.message});
+            outputChannel.send({content:`Unknown error sending initial DM message to ${msg.author.name}`});
         }
         return;
     }
     introstage3(member);
     console.log(member.user.tag + ' joined, messages sent');
-    outputchannel.send(`${member.user.tag} joined, messages sent.`);
+    outputChannel.send({content:`${member.user.tag} joined, messages sent.`});
     try {
         // equivalent to: INSERT INTO tags (name, description, username) values (?, ?, ?);
-        const newmembersettings = await membersettings.create({
+        const newMemberSettings = await membersettings.create({
             id: member.user.id,
             disctag: member.user.tag,
             name: 'None',
@@ -248,13 +246,13 @@ async function memberverification(member) {
             pronouns: 'None',
             altacc: false,
         });
-        console.log(`${newmembersettings.id} added.`);
+        console.log(`${newMemberSettings.id} added.`);
     }
     catch (e) {
         if (e.name === 'SequelizeUniqueConstraintError') {
             console.log('That member settings already exists.');
         } else {
-            outputchannel.send("Something went wrong with member data.");
+            outputChannel.send({ content:"Something went wrong with member data."});
             console.log(e);
         }
     }
@@ -262,14 +260,14 @@ async function memberverification(member) {
 
 async function introstage3(member) {
     let directmess = await member.createDM();
-    await directmess.send(verifmsg3);
+    await directmess.send({embeds:[verifmsg3]});
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let name = collected.first();
             name = name.toString();
             if (name.length > 31) {
-                directmess.send(toolongnick);
+                directmess.send({embeds:[toolongnick]});
                 introstage3(member);
             } else {
                 member.setNickname(name, 'automated bot nicknaming');
@@ -281,20 +279,20 @@ async function introstage3(member) {
 async function introstage4(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    await directmess.send(verifmsg4);
+    await directmess.send({embeds:[verifmsg4]});
     let role;
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let value;
             try {
                 value = Number(collected.first().content);
             } catch(e) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage4(member);
             }
             if (value < 18) {
-                directmess.send(invalidagevalue);
+                directmess.send({embeds:[invalidagevalue]});
                 introstage4(member);
             }
             if (value >= 18 && value <= 26) {
@@ -304,15 +302,15 @@ async function introstage4(member) {
                 introstage5(member);
             }
             if (value > 25) {
-                directmess.send(invalidagevalue);
+                directmess.send({embeds:[invalidagevalue]});
                 introstage4(member);
             }
             if (value == NaN) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage4(member);
             }
             if (value == null) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage4(member);
             }
         })
@@ -321,16 +319,16 @@ async function introstage4(member) {
 async function introstage5(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    await directmess.send(verifmsg5);
+    await directmess.send({embeds:[verifmsg5]});
     let role;
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let value = collected.first();
             value = value.toString();
             value = value.toUpperCase();
             if (acceptedsexuality.indexOf(value) == -1) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage5(member);
             }
             if (acceptedsexuality.indexOf(value) != -1) {
@@ -375,16 +373,16 @@ async function introstage5(member) {
 async function introstage6(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    await directmess.send(verifmsg6);
+    await directmess.send({embeds:[verifmsg6]});
     let role;
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let value = collected.first();
             value = value.toString();
             value = value.toUpperCase();
             if (acceptedromantic.indexOf(value) == -1) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage6(member);
             }
             if (acceptedromantic.indexOf(value) != -1) {
@@ -425,16 +423,16 @@ async function introstage6(member) {
 async function introstage7(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    await directmess.send(verifmsg7);
+    await directmess.send({embeds:[verifmsg7]});
     let role;
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let value = collected.first();
             value = value.toString();
             value = value.toUpperCase();
             if (acceptedgender.indexOf(value) == -1) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage7(member);
             }
             if (acceptedgender.indexOf(value) != -1) {
@@ -497,16 +495,16 @@ async function introstage7(member) {
 async function introstage8(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    await directmess.send(verifmsg8);
+    await directmess.send({embeds:[verifmsg8]});
     let role;
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let value = collected.first();
             value = value.toString();
             value = value.toUpperCase();
             if (acceptedpronoun.indexOf(value) == -1) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage8(member);
             }
             if (acceptedpronoun.indexOf(value) != -1) {
@@ -535,16 +533,16 @@ async function introstage8(member) {
 async function introstage9(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    await directmess.send(verifmsg9);
+    await directmess.send({embeds:[verifmsg9]});
     let role;
     const filter = (msg) => msg.content;
-    directmess.awaitMessages(filter, { max: 1})
+    directmess.awaitMessages({filter, max: 1})
         .then(collected => {
             let value = collected.first();
             value = value.toString();
             value = value.toUpperCase();
             if (acceptedregion.indexOf(value) == -1) {
-                directmess.send(invalidvalue);
+                directmess.send({embeds:[invalidvalue]});
                 introstage9(member);
             }
             if (acceptedregion.indexOf(value) != -1) {
@@ -589,7 +587,7 @@ async function introstage10(member) {
     message.title = 'What color do you want your name to be?';
     message.description = 'React with one of the color boxes to change your name in the server to that color.\n\nGray at the end is Default';
     message.color = '#316EFF';
-    let messagesent = await directmess.send(message);
+    let messagesent = await directmess.send({embeds:[message]});
     //gradient/good order
     //deep purple
     messagesent.react('765292955031306281');
@@ -626,7 +624,7 @@ async function introstage10(member) {
     //none
     messagesent.react('765292955266973696');
     const filter = (reaction, user) => user == member.user.id;
-    messagesent.awaitReactions(filter, { max: 1})
+    messagesent.awaitReactions({filter, max: 1})
     .then(collected => {
         introstage11(member);
         let reaction = collected.first();
@@ -716,12 +714,12 @@ async function introstage10(member) {
 async function introstage11(member) {
     let GTV = member.guild;
     let directmess = await member.createDM();
-    let message = await directmess.send(verifmsgalt);
+    let message = await directmess.send({embeds:[verifmsgalt]});
     let role;
     const filter = (reaction, user) => (reaction.emoji.name === '🇳' || reaction.emoji.name === '🇾') && user == member.user.id;
     message.react("🇾");
     await message.react('🇳');
-    message.awaitReactions(filter, { max: 1})
+    message.awaitReactions({filter, max: 1})
         .then(collected => {
             let reaction = collected.first();
             if (reaction.emoji.name == '🇾' ) {
@@ -743,7 +741,7 @@ async function introstage12(member) {
     let channel = bot.channels.cache.get('764515162052362268');
     let general = bot.channels.cache.get('764515162207944741');
     let directmess = await member.createDM();
-    await directmess.send(verifmsgcomplete);
+    await directmess.send({embeds:[verifmsgcomplete]});
     let finishedverif = new Discord.MessageEmbed;
     //import sheet
     console.log('fetching user data from DB');
@@ -751,15 +749,13 @@ async function introstage12(member) {
     finishedverif.title = ('New Member - ' + settings.name + '/' + settings.disctag);
     finishedverif.description = ('Discord Tag: ' + settings.disctag + '\nDiscord ID: ' + settings.id + '\nFirst Name: ' + settings.name + '\nAge: ' + settings.age + '\nSexuality: ' + settings.sexuality + '\nRomantic Orientation: ' + settings.romantic + '\nGender: ' + settings.gender + '\nPronouns:' + settings.pronouns + '\nRegion: ' + settings.region + '\nAlt Account: ' + settings.altacc + '\n\nReact with ☑️ to approve this member, react with ❌ to deny this member.');
 
-    finishedverif.setFooter('Please note that if the bot goes offline at any point while this message stays undenied or unapproved, even if it starts back up, you must remove the New Member Role and add the Member Role manually.', 'https://i.imgur.com/xZBXD86.png');
-
-    let message = await channel.send(finishedverif);
+    let message = await channel.send({embeds:[finishedverif]});
 
     message.react('☑️');
     await message.react('❌');
 
     const filter = (reaction, user) => (reaction.emoji.name === '☑️' || reaction.emoji.name === '❌') && user != bot.user.id;
-    message.awaitReactions(filter, { max: 1})
+    message.awaitReactions({filter, max: 1})
         .then(collected => {
             let reaction = collected.first();
             if (reaction.emoji.name == '☑️' ) {
@@ -775,11 +771,11 @@ async function introstage12(member) {
                 let approvedembed = new Discord.MessageEmbed
                 approvedembed.title = ('New Member - ' + settings.name + '/' + settings.disctag + ' - ***APPROVED***');
                 approvedembed.color = '#31974F';
-                channel.send(approvedembed);
+                channel.send({embeds:[approvedembed]});
                 let welcomemsg = new Discord.MessageEmbed;
                 welcomemsg.color = '#FFF033';
                 welcomemsg.setDescription(`Everybody welcome ${member} to the server!`);
-                general.send(welcomemsg);
+                general.send({embeds:[welcomemsg]});
                 console.log(settings.name + ' welcome msg sent');
             }
             if (reaction.emoji.name == '❌' ) {
@@ -787,7 +783,7 @@ async function introstage12(member) {
                 let deniedembed = new Discord.MessageEmbed;
                 deniedembed.title = ('New Member - ' + settings.name + '/' + settings.disctag + ' - ***DENIED***');
                 deniedembed.color = '#E93233';
-                channel.send(deniedembed);
+                channel.send({embeds:[deniedembed]});
                 return;
             }
         })

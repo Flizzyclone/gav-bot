@@ -1,9 +1,7 @@
 //CORE LIBRARIES
 //discord
 const Discord = require("discord.js");
-const bot = new Discord.Client({
-    ws: { intents: ["DIRECT_MESSAGES","DIRECT_MESSAGE_REACTIONS","GUILDS","GUILD_EMOJIS","GUILD_INTEGRATIONS","GUILD_MEMBERS","GUILD_MESSAGES","GUILD_MESSAGE_REACTIONS","GUILD_WEBHOOKS"] }
-});
+const bot = new Discord.Client({ intents: [Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.GUILD_EMOJIS,Discord.Intents.FLAGS.GUILD_INTEGRATIONS,Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_WEBHOOKS]});
 
 const fs = require('fs')
 
@@ -30,7 +28,7 @@ bot.on("message", async (msg) => {
                 } 
             }
             let outputChannel = await bot.channels.cache.get(config.dmOutputChannel);
-            outputChannel.send(`DM From ${msg.author} at ${datestring}:\n${content}`);
+            outputChannel.send({content:`DM From ${msg.author} at ${datestring}:\n${content}`});
         }
     }
     if (args[0] == "?suggest") {
@@ -43,17 +41,17 @@ bot.on("message", async (msg) => {
         returnMsg.suggestionMsg.react(config.suggestions.noEmote);
     } else if (args[0] == "?deletesuggestion") {
         if (args[1] == '0') {
-            msg.channel.send('Reserved Suggestion Number.');
+            msg.channel.send({content:'Reserved Suggestion Number.'});
         }
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
         let suggestionChannel = await bot.channels.cache.get(settings.suggestionschannel)
         let response = await suggestions.deleteSuggestion(args[1],msg.author.id);
         if (response.status == false) {
-            msg.channel.send(response.error);
+            msg.channel.send({content:response.error});
         } else {
             let message = await suggestionChannel.messages.fetch(response.message_id);
             message.delete();
-            msg.channel.send(`Suggestion #${response.id} deleted. It read ` + '`' + Discord.Util.removeMentions(response.desc) + '`.');
+            msg.channel.send({content:`Suggestion #${response.id} deleted. It read ` + '`' + Discord.Util.removeMentions(response.desc) + '`.'});
         }
     } else if (args[0] == "?suggestionchannel") { 
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
@@ -61,12 +59,12 @@ bot.on("message", async (msg) => {
         try {
             admin = msg.member.hasPermission('ADMINISTRATOR');
         } catch (e) {
-            msg.channel.send(`Must do this command in server where suggestions is enabled!`);
+            msg.channel.send({content:`Must do this command in server where suggestions is enabled!`});
             return;
         }
         if (admin == true) {
             if (args[1] == null) {
-                msg.channel.send('Please send a channel to change suggestions to.')
+                msg.channel.send({content:'Please send a channel to change suggestions to.'})
             } else {
                 let channelid = args[1]
                 channelid = channelid.replace('>','');
@@ -84,16 +82,16 @@ bot.on("message", async (msg) => {
                     });
                     settings.suggestionschannel = channelid;
                     fs.writeFileSync('./data/suggestiondata.json', JSON.stringify(settings));
-                    msg.channel.send(`Suggestions channel set to ${starchannel}!`);
+                    msg.channel.send({content:`Suggestions channel set to ${starchannel.toString()}!`});
                     return;
                 } catch(e) {
                     console.error(e);
-                    msg.channel.send('`' + e + '`');
+                    msg.channel.send({content:'`' + e + '`'});
                     return;
                 }
             }
         } else {
-            msg.channel.send(`You are not an admin, you can't do that`);
+            msg.channel.send({content:`You are not an admin, you can't do that`});
             return;
         }
         fs.writeFileSync('./data/suggestiondata.json',JSON.stringify(settings));
@@ -110,18 +108,18 @@ bot.on("message", async (msg) => {
                 dm = await member.createDM();
               } catch (error) {
                 console.error('cant create dm with user');
-                msg.channel.send('Cant find user');
+                msg.channel.send({content:'Cant find user'});
                 return false;
             }
             let messagetosend = args;
             messagetosend.splice(0, 3);
             messagetosend = messagetosend.join(' ');
             try {
-                dm.send(messagetosend);
-                msg.channel.send('Message Sent!');
+                dm.send({content:messagetosend});
+                msg.channel.send({content:'Message Sent!'});
               } catch (error) {
                 console.error('cant send DM');
-                msg.channel.send('Cant send DM');
+                msg.channel.send({content:'Cant send DM'});
             }
         }
         if (args[1] == 'msg' && msg.member.hasPermission('MANAGE_MESSAGES')) {
@@ -134,18 +132,18 @@ bot.on("message", async (msg) => {
                 channel = bot.channels.cache.get(memid);
               } catch (error) {
                 console.error('cant create dm with user');
-                msg.channel.send('Cant find channel');
+                msg.channel.send({content:'Cant find channel'});
                 return false;
             }
             let messagetosend = args;
             messagetosend.splice(0, 3);
             messagetosend = messagetosend.join(' ');
             try {
-                channel.send(messagetosend);
-                msg.channel.send('Message Sent!');
+                channel.send({content:messagetosend});
+                msg.channel.send({content:'Message Sent!'});
               } catch (error) {
                 console.error('cant send message');
-                msg.channel.send('Cant send message');
+                msg.channel.send({content:'Cant send message'});
             }
         }
     }
