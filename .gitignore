@@ -1,0 +1,5 @@
+node_modules/
+config.json
+data/memberdata.sqlite
+data/suggestiondata.json
+data/suggestionsdb.sqlite

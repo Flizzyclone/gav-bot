@@ -766,8 +766,8 @@ async function introstage12(member) {
                     role = GTV.roles.cache.get('764515161712623652');
                     member.roles.add(role);
                 }
-                if (member.roles.cache.has('764515161800441872') == true ) {
-                    role = GTV.roles.cache.get('764515161800441872');
+                if (member.roles.cache.has(config.roles.newMember) == true ) {
+                    role = GTV.roles.cache.get(config.roles.newMember);
                     member.roles.remove(role);
                 }
                 let approvedembed = new Discord.MessageEmbed

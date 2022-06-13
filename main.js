@@ -7,6 +7,8 @@ const bot = new Discord.Client({
 
 const fs = require('fs')
 
+const config = require('./config.json')
+
 const suggestions = require('./suggestions');
 
 bot.on("ready", async () => {
@@ -15,9 +17,9 @@ bot.on("ready", async () => {
 
 bot.on("message", async (msg) => {
     var args = msg.content.split(" ");
-    if (msg.channel.type == 'dm' && msg.author.id !== '764598802287951893') {
-        let GAV = bot.guilds.cache.get('764515161712623647');
-        if (GAV.member(msg.author).roles.cache.has('764515161800441872') == false) {
+    if (msg.channel.type == 'dm' && msg.author.id !== config.clientId) {
+        let GAV = bot.guilds.cache.get(config.roles.guildId);
+        if (GAV.member(msg.author).roles.cache.has(config.roles.newMember) == false) {
             let date = new Date();
             let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
             content = msg.content;
@@ -27,8 +29,8 @@ bot.on("message", async (msg) => {
                     content = content + '\n' + attachments[i].url.toString();
                 } 
             }
-            let ryandm = await bot.channels.cache.get('764515162052362260');
-            ryandm.send(`DM From ${msg.author} at ${datestring}:\n${content}`);
+            let outputChannel = await bot.channels.cache.get(config.dmOutputChannel);
+            outputChannel.send(`DM From ${msg.author} at ${datestring}:\n${content}`);
         }
     }
     if (args[0] == "?suggest") {
@@ -36,9 +38,9 @@ bot.on("message", async (msg) => {
         let channel = await bot.channels.cache.get(settings.suggestionschannel)
         let returnMsg = await suggestions.newSuggestion(msg, channel);
         msg.channel.send(returnMsg.message);
-        returnMsg.suggestionMsg.react('854115748678991903');
-        returnMsg.suggestionMsg.react('854115749136564224');
-        returnMsg.suggestionMsg.react('854115748737843251');
+        returnMsg.suggestionMsg.react(config.suggestions.yesEmote);
+        returnMsg.suggestionMsg.react(config.suggestions.neutralEmote);
+        returnMsg.suggestionMsg.react(config.suggestions.noEmote);
     } else if (args[0] == "?deletesuggestion") {
         if (args[1] == '0') {
             msg.channel.send('Reserved Suggestion Number.');
@@ -150,4 +152,4 @@ bot.on("message", async (msg) => {
 });
 
 
-bot.login(""); //bot token
+bot.login(config.token); //bot token

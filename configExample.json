@@ -1,0 +1,14 @@
+{
+    "token":"",
+    "clientId":"ID for bot user",
+    "guildId":"ID for guild you're using the bot in",
+    "dmOutputChannel":"Output channel for DMs to the bot (ideally staff only)",
+    "roles": {
+        "newMember":"ROLE_ID"
+    },
+    "suggestions":{
+        "yesEmote":"Emote IDs for suggestion emotes, paste in a unicode character if you prefer to use the stock discord emotes",
+        "neutralEmote":"",
+        "noEmote":""
+    }
+}
