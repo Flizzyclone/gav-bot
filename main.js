@@ -1,7 +1,7 @@
 //CORE LIBRARIES
 //discord
 const Discord = require("discord.js");
-const bot = new Discord.Client({ intents: [Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.GUILD_EMOJIS,Discord.Intents.FLAGS.GUILD_INTEGRATIONS,Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_WEBHOOKS]});
+const bot = new Discord.Client({ intents: [Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.GUILD_INTEGRATIONS,Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_WEBHOOKS]});
 
 const fs = require('fs')
 
@@ -16,7 +16,7 @@ bot.on("ready", async () => {
 bot.on("message", async (msg) => {
     var args = msg.content.split(" ");
     if (msg.channel.type == 'dm' && msg.author.id !== config.clientId) {
-        let GAV = await bot.guilds.cache.get(config.roles.guildId);
+        let GAV = await bot.guilds.fetch(config.roles.guildId);
         if (GAV.member(msg.author).roles.cache.has(config.roles.newMember) == false) {
             let date = new Date();
             let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
