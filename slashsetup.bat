@@ -1,0 +1,2 @@
+node slashsetup.js
+pause

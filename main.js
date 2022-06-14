@@ -23,6 +23,16 @@ for (const file of textCommandFiles) {
 	client.textCommands.set(command.name, command);
 }
 
+const slashCommandFiles = fs.readdirSync('./slashCommands').filter(file => file.endsWith('.js'));
+
+client.slashCommands = new Discord.Collection();
+
+for (const file of slashCommandFiles) {
+    const command = require(`./slashCommands/${file}`);
+  
+	client.slashCommands.set(command.name, command);
+}
+
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -30,10 +40,7 @@ client.on("ready", async () => {
 client.on("messageCreate", async (msg) => {
     var args = msg.content.split(" ");
     let channel = await client.channels.fetch(msg.channelId);
-    console.log(msg)
-    console.log(channel)
     if (channel.type == 'DM' && msg.author.id !== config.clientId) {
-        console.log('true!')
         let GAV = await client.guilds.fetch(config.guildId);
         let member = await GAV.members.fetch(msg.author.id);
         let role = await GAV.roles.fetch(config.roles.newMember);
@@ -125,6 +132,17 @@ client.on("messageCreate", async (msg) => {
         }
     }
 });
+
+client.on("interactionCreate", async (interaction) => {
+    if (!client.slashCommands.has(interaction.commandName)) return;
+
+    try {
+      client.slashCommands.get(interaction.commandName).execute(interaction, client);
+    } catch (error) {
+      console.error(error);
+      console.log('[ERROR] Executing slash command: ' + args[0]);
+    }
+})
 
 
 client.login(config.token); //bot token
