@@ -1,7 +1,10 @@
 //CORE LIBRARIES
 //discord
 const Discord = require("discord.js");
-const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.GUILD_INTEGRATIONS,Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_WEBHOOKS]});
+const client = new Discord.Client({
+    intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_INTEGRATIONS, Discord.Intents.FLAGS.GUILD_MEMBERS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Discord.Intents.FLAGS.GUILD_WEBHOOKS, Discord.Intents.FLAGS.DIRECT_MESSAGES, Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS],
+    partials: ['CHANNEL']
+});
 
 const fs = require('fs')
 
@@ -26,22 +29,27 @@ client.on("ready", async () => {
 
 client.on("messageCreate", async (msg) => {
     var args = msg.content.split(" ");
-    if (msg.channel.type == 'dm' && msg.author.id !== config.clientId) {
-        let GAV = await client.guilds.fetch(config.roles.guildId);
-        if (GAV.member(msg.author).roles.cache.has(config.roles.newMember) == false) {
+    let channel = await client.channels.fetch(msg.channelId);
+    console.log(msg)
+    console.log(channel)
+    if (channel.type == 'DM' && msg.author.id !== config.clientId) {
+        console.log('true!')
+        let GAV = await client.guilds.fetch(config.guildId);
+        let member = await GAV.members.fetch(msg.author.id);
+        let role = await GAV.roles.fetch(config.roles.newMember);
+        if (member.roles.cache.has(role) == false) {
             let date = new Date();
             let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
             content = msg.content;
-            if (msg.attachments.array().length > 0) {
-                let attachments = msg.attachments.array();
-                for (i=0; i < attachments.length; i++) {
-                    content = content + '\n' + attachments[i].url.toString();
+            if (msg.attachments.size > 0) {
+                for (i=0; i < msg.attachments.size; i++) {
+                    content = content + '\n' + msg.attachments.at(i).url.toString();
                 } 
             }
-            let outputChannel = await client.channels.cache.get(config.dmOutputChannel);
+            let outputChannel = await client.channels.fetch(config.dmOutputChannel);
             outputChannel.send({content:`DM From ${msg.author} at ${datestring}:\n${content}`});
         }
-    }
+    }  
     if (args[0] == "?suggest") {
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
         let channel = await client.channels.cache.get(settings.suggestionschannel)
