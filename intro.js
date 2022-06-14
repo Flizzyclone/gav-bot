@@ -185,7 +185,7 @@ bot.on("ready", async () => {
     membersettings.sync();
 });
 
-bot.on("message", async (msg) => {
+bot.on("messageCreate", async (msg) => {
     var args = msg.content.split(" ");
     switch (args[0]) {
         case "!gav":

@@ -1,7 +1,7 @@
 //CORE LIBRARIES
 //discord
 const Discord = require("discord.js");
-const bot = new Discord.Client({ intents: [Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.GUILD_INTEGRATIONS,Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_WEBHOOKS]});
+const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.DIRECT_MESSAGES,Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILDS,Discord.Intents.FLAGS.GUILD_INTEGRATIONS,Discord.Intents.FLAGS.GUILD_MEMBERS,Discord.Intents.FLAGS.GUILD_MESSAGES,Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,Discord.Intents.FLAGS.GUILD_WEBHOOKS]});
 
 const fs = require('fs')
 
@@ -9,14 +9,25 @@ const config = require('./config.json');
 
 const suggestions = require('./suggestions');
 
-bot.on("ready", async () => {
-    console.log(`Logged in as ${bot.user.tag}!`);
+//Command importing
+const textCommandFiles = fs.readdirSync('./textCommands').filter(file => file.endsWith('.js'));
+
+client.textCommands = new Discord.Collection();
+
+for (const file of textCommandFiles) {
+    const command = require(`./textCommands/${file}`);
+  
+	client.textCommands.set(command.name, command);
+}
+
+client.on("ready", async () => {
+    console.log(`Logged in as ${client.user.tag}!`);
 });
 
-bot.on("message", async (msg) => {
+client.on("messageCreate", async (msg) => {
     var args = msg.content.split(" ");
     if (msg.channel.type == 'dm' && msg.author.id !== config.clientId) {
-        let GAV = await bot.guilds.fetch(config.roles.guildId);
+        let GAV = await client.guilds.fetch(config.roles.guildId);
         if (GAV.member(msg.author).roles.cache.has(config.roles.newMember) == false) {
             let date = new Date();
             let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
@@ -27,13 +38,13 @@ bot.on("message", async (msg) => {
                     content = content + '\n' + attachments[i].url.toString();
                 } 
             }
-            let outputChannel = await bot.channels.cache.get(config.dmOutputChannel);
+            let outputChannel = await client.channels.cache.get(config.dmOutputChannel);
             outputChannel.send({content:`DM From ${msg.author} at ${datestring}:\n${content}`});
         }
     }
     if (args[0] == "?suggest") {
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
-        let channel = await bot.channels.cache.get(settings.suggestionschannel)
+        let channel = await client.channels.cache.get(settings.suggestionschannel)
         let returnMsg = await suggestions.newSuggestion(msg, channel);
         msg.channel.send(returnMsg.message);
         returnMsg.suggestionMsg.react(config.suggestions.yesEmote);
@@ -44,7 +55,7 @@ bot.on("message", async (msg) => {
             msg.channel.send({content:'Reserved Suggestion Number.'});
         }
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
-        let suggestionChannel = await bot.channels.cache.get(settings.suggestionschannel)
+        let suggestionChannel = await client.channels.cache.get(settings.suggestionschannel)
         let response = await suggestions.deleteSuggestion(args[1],msg.author.id);
         if (response.status == false) {
             msg.channel.send({content:response.error});
@@ -57,7 +68,7 @@ bot.on("message", async (msg) => {
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
         let admin = false;
         try {
-            admin = msg.member.hasPermission('ADMINISTRATOR');
+            admin = msg.member.permissions.has('ADMINISTRATOR');
         } catch (e) {
             msg.channel.send({content:`Must do this command in server where suggestions is enabled!`});
             return;
@@ -71,8 +82,8 @@ bot.on("message", async (msg) => {
                 channelid = channelid.replace('#','');
                 channelid = channelid.replace('<','');
                 try {
-                    let oldchannel = await bot.channels.cache.get(settings.suggestionschannel);
-                    starchannel = await bot.channels.cache.get(channelid);
+                    let oldchannel = await client.channels.cache.get(settings.suggestionschannel);
+                    starchannel = await client.channels.cache.get(channelid);
                     const webhooks = await oldchannel.fetchWebhooks();
 		            const webhook = webhooks.first();
                     await webhook.edit({
@@ -96,58 +107,16 @@ bot.on("message", async (msg) => {
         }
         fs.writeFileSync('./data/suggestiondata.json',JSON.stringify(settings));
     } else if (args[0] == '!gav') {
-        if (args[1] == 'dm' && msg.member.hasPermission('MANAGE_MESSAGES')) {
-            console.log(msg.content);
-            let memid = args[2];
-            memid = memid.replace('>','');
-            memid = memid.replace('!','');
-            memid = memid.replace('<@','');
-            let member = bot.users.cache.get(memid);
-            let dm;
-            try {
-                dm = await member.createDM();
-              } catch (error) {
-                console.error('cant create dm with user');
-                msg.channel.send({content:'Cant find user'});
-                return false;
-            }
-            let messagetosend = args;
-            messagetosend.splice(0, 3);
-            messagetosend = messagetosend.join(' ');
-            try {
-                dm.send({content:messagetosend});
-                msg.channel.send({content:'Message Sent!'});
-              } catch (error) {
-                console.error('cant send DM');
-                msg.channel.send({content:'Cant send DM'});
-            }
-        }
-        if (args[1] == 'msg' && msg.member.hasPermission('MANAGE_MESSAGES')) {
-            let memid = args[2];
-            memid = memid.replace('>','');
-            memid = memid.replace('!','');
-            memid = memid.replace('<#','');
-            let channel;
-            try {
-                channel = bot.channels.cache.get(memid);
-              } catch (error) {
-                console.error('cant create dm with user');
-                msg.channel.send({content:'Cant find channel'});
-                return false;
-            }
-            let messagetosend = args;
-            messagetosend.splice(0, 3);
-            messagetosend = messagetosend.join(' ');
-            try {
-                channel.send({content:messagetosend});
-                msg.channel.send({content:'Message Sent!'});
-              } catch (error) {
-                console.error('cant send message');
-                msg.channel.send({content:'Cant send message'});
-            }
+        if (!client.textCommands.has(args[1].toLowerCase())) return;
+
+        try {
+          client.textCommands.get(args[1].toLowerCase()).execute(msg, args, client);
+        } catch (error) {
+          console.error(error);
+          console.log('[ERROR] Executing command: ' + args[0]);
         }
     }
 });
 
 
-bot.login(config.token); //bot token
+client.login(config.token); //bot token
