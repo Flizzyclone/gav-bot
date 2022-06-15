@@ -2,11 +2,29 @@ const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const config = require('./config.json');
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder, SlashCommandStringOption } = require('@discordjs/builders');
 const { PermissionFlagsBits } = require('discord-api-types/v10');
 let commands = [];
 
 const rest = new REST({ version: '9' }).setToken(config.token)
+
+const demographicsStr = new SlashCommandStringOption()
+.setName('category')
+.setDescription('The set of labels to get demographics for.')
+.setRequired(true)
+.addChoices({name:"Age",value:"age"},
+{name:"Romantic Orientation",value:"romantic"},
+{name:"Sexual Orientation",value:"sexuality"},
+{name:"Gender Identity",value:"gender"},
+{name:"Preferred Pronouns",value:"pronouns"},
+{name:"Region",value:"region"},
+{name:"Color",value:"color"})
+
+const demographics = new SlashCommandBuilder()
+.setName('demographics')
+.setDescription('Get demographic information about the members of this server.')
+.addStringOption(demographicsStr)
+commands.push(demographics);
 
 const dm = new SlashCommandBuilder()
 .setName('dm')
@@ -51,7 +69,7 @@ commands.push(msg);
 		console.log('Started refreshing application (/) commands.');
 
 		await rest.put(
-			Routes.applicationGuildCommands(config.clientId, config.guildId),
+			Routes.applicationCommands(config.clientId),
 			{ body: commandjson },
 		);
 

@@ -10,5 +10,30 @@
         "yesEmote":"Emote IDs for suggestion emotes, paste in a unicode character if you prefer to use the stock discord emotes",
         "neutralEmote":"",
         "noEmote":""
+    },
+    "demographics":{
+        "category1":[
+            {
+                "id":"764515161821544450",
+                "label":"Deep Purple"
+            },
+            {
+                "id":"764515161821544449",
+                "label":"Hot Pink",
+                "dontCount":true
+            }
+        ],
+        "category2":[
+            {
+                "id":"764515161821544450",
+                "label":"Deep Purple"
+            },
+            {
+                "id":"764515161821544449",
+                "label":"Hot Pink",
+                "dontUseRoleColor":true,
+                "color":"#ffffff"
+            }
+        ]
     }
 }
