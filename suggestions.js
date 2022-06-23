@@ -47,9 +47,8 @@ async function newSuggestion(msg, channel) {
         let num = data.numofsuggestions;
         num++;
         let webhookMsg;
-        if (msg.attachments.array().length > 0) {
-            let attachments = msg.attachments.array();
-            if (attachments[0].url.substring((attachments[0].url.length) - 3) == 'gif') {
+        if (msg.attachments.size > 0) {
+            if (msg.attachments.at(0).url.substring((msg.attachments.at(0).url.length) - 3) == 'gif') {
                 webhookMsg = await webhook.send({
                     embeds: [{
                         description:suggestion,
@@ -60,7 +59,7 @@ async function newSuggestion(msg, channel) {
                         }
                     }],
                     files: [{
-                        attachment: attachments[0].url,
+                        attachment: msg.attachments.at(0).url,
                         name: 'file.gif'
                     }]
                 });
@@ -100,7 +99,7 @@ async function newSuggestion(msg, channel) {
         let returnMsg = new Discord.MessageEmbed;
         returnMsg.description = `Your Suggestion has been sent to ${channel} to be voted on.`;
         returnMsg.color = '#31974F';
-        returnMsg.setFooter(`Use ?deletesuggestion ${num} to delete this suggestion.`);
+        returnMsg.setFooter({text:`Use ?deletesuggestion ${num} to delete this suggestion.`});
         return {message: returnMsg, suggestionMsg: webhookMsg};
     } catch(e) {
         console.log(e);

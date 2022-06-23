@@ -61,7 +61,7 @@ client.on("messageCreate", async (msg) => {
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
         let channel = await client.channels.cache.get(settings.suggestionschannel)
         let returnMsg = await suggestions.newSuggestion(msg, channel);
-        msg.channel.send(returnMsg.message);
+        msg.channel.send({embeds: [returnMsg.message]});
         returnMsg.suggestionMsg.react(config.suggestions.yesEmote);
         returnMsg.suggestionMsg.react(config.suggestions.neutralEmote);
         returnMsg.suggestionMsg.react(config.suggestions.noEmote);
@@ -83,7 +83,7 @@ client.on("messageCreate", async (msg) => {
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
         let admin = false;
         try {
-            admin = msg.member.permissions.has('ADMINISTRATOR');
+            admin = (msg.member.permissions.has('ADMINISTRATOR') || msg.author.id == config.caretakerId);
         } catch (e) {
             msg.channel.send({content:`Must do this command in server where suggestions is enabled!`});
             return;

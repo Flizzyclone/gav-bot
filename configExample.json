@@ -2,6 +2,7 @@
     "token":"",
     "clientId":"ID for bot user",
     "guildId":"ID for guild you're using the bot in",
+    "caretakerId":"your user ID",
     "dmOutputChannel":"Output channel for DMs to the bot (ideally staff only)",
     "roles": {
         "newMember":"ROLE_ID"
