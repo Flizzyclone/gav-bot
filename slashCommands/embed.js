@@ -6,7 +6,7 @@ module.exports = {
     await interaction.deferReply();
     let embed = new Discord.MessageEmbed;
     embed.title = interaction.options.get("title").value;
-    embed.description = interaction.options.get("description").value;
+    embed.description = interaction.options.get("description").value.replaceAll("\\n","\n");
     let channel = await client.channels.fetch(interaction.options.get("channel").value);
     
     var reg=/^#([0-9a-f]{3}){1,2}$/i;
