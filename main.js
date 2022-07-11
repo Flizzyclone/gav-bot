@@ -12,6 +12,8 @@ const config = require('./config.json');
 
 const suggestions = require('./suggestions');
 
+const intro = require('./intro');
+
 //Command importing
 const textCommandFiles = fs.readdirSync('./textCommands').filter(file => file.endsWith('.js'));
 
@@ -33,8 +35,32 @@ for (const file of slashCommandFiles) {
 	client.slashCommands.set(command.name, command);
 }
 
+const messageInteractionFiles = fs.readdirSync('./buttonResponse').filter(file => file.endsWith('.js'));
+
+client.messageInteractions = new Discord.Collection();
+
+for (const file of messageInteractionFiles) {
+    const command = require(`./buttonResponse/${file}`);
+    
+    client.messageInteractions.set(command.name, command);
+}
+
+const modalInteractionFiles = fs.readdirSync('./modalInteractions').filter(file => file.endsWith('.js'));
+
+client.modalInteractions = new Discord.Collection();
+
+for (const file of modalInteractionFiles) {
+    const command = require(`./modalInteractions/${file}`);
+    
+    client.modalInteractions.set(command.name, command);
+}
+
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on("guildMemberAdd", async (member) => {
+    intro.initiateVerification(member);
 });
 
 client.on("messageCreate", async (msg) => {
@@ -134,14 +160,38 @@ client.on("messageCreate", async (msg) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-    if (!client.slashCommands.has(interaction.commandName)) return;
+    console.log(interaction)
+    if (interaction.type == "APPLICATION_COMMAND") { //Slash Command
+        if (!client.slashCommands.has(interaction.commandName)) return;
 
-    try {
-      client.slashCommands.get(interaction.commandName).execute(interaction, client);
-    } catch (error) {
-      console.error(error);
-      console.log('[ERROR] Executing slash command: ' + args[0]);
-    }
+        try {
+            client.slashCommands.get(interaction.commandName).execute(interaction, client);
+        } catch (error) {
+            console.error(error);
+            console.log('[ERROR] Executing slash command: ' +interaction.commandName);
+        }
+    } else if (interaction.type == "MESSAGE_COMPONENT") { //Button Interaction
+        let command = interaction.customId.substring(0,interaction.customId.indexOf('_'));
+        console.log(command)
+        if (!client.messageInteractions.has(command)) return;
+
+        try {
+            client.messageInteractions.get(command).execute(interaction, client);
+        } catch (error) {
+            console.error(error);
+            console.log('[ERROR] Executing slash command: ' + command);
+        }
+    } else if (interaction.type == "MODAL_SUBMIT") { //Modal Interaction
+        let command = interaction.customId.substring(0,interaction.customId.indexOf('_'));
+        if (!client.modalInteractions.has(command)) return;
+
+        try {
+            client.modalInteractions.get(command).execute(interaction, client);
+        } catch (error) {
+            console.error(error);
+            console.log('[ERROR] Executing slash command: ' + command);
+        }
+    }  
 })
 
 
