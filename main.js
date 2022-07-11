@@ -60,7 +60,7 @@ client.on("ready", async () => {
 });
 
 client.on("guildMemberAdd", async (member) => {
-    intro.initiateVerification(member);
+    intro.initiateVerification(member,client);
 });
 
 client.on("messageCreate", async (msg) => {
