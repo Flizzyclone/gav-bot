@@ -67,21 +67,16 @@ client.on("messageCreate", async (msg) => {
     var args = msg.content.split(" ");
     let channel = await client.channels.fetch(msg.channelId);
     if (channel.type == 'DM' && msg.author.id !== config.clientId) {
-        let GAV = await client.guilds.fetch(config.guildId);
-        let member = await GAV.members.fetch(msg.author.id);
-        let role = await GAV.roles.fetch(config.roles.newMember);
-        if (member.roles.cache.has(role) == false) {
-            let date = new Date();
-            let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
-            content = msg.content;
-            if (msg.attachments.size > 0) {
-                for (i=0; i < msg.attachments.size; i++) {
-                    content = content + '\n' + msg.attachments.at(i).url.toString();
-                } 
-            }
-            let outputChannel = await client.channels.fetch(config.dmOutputChannel);
-            outputChannel.send({content:`DM From ${msg.author} at ${datestring}:\n${content}`});
+        let date = new Date();
+        let datestring = date.toLocaleString('en-GB', { timeZone: 'UTC' });
+        content = msg.content;
+        if (msg.attachments.size > 0) {
+            for (i=0; i < msg.attachments.size; i++) {
+                content = content + '\n' + msg.attachments.at(i).url.toString();
+            } 
         }
+        let outputChannel = await client.channels.fetch(config.dmOutputChannel);
+        outputChannel.send({content:`DM From ${msg.author} at ${datestring}:\n${content}`});
     }  
     if (args[0] == "?suggest") {
         let settings = JSON.parse(fs.readFileSync('./data/suggestiondata.json'));
