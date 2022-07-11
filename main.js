@@ -155,7 +155,6 @@ client.on("messageCreate", async (msg) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-    console.log(interaction)
     if (interaction.type == "APPLICATION_COMMAND") { //Slash Command
         if (!client.slashCommands.has(interaction.commandName)) return;
 

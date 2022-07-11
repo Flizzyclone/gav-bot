@@ -43,6 +43,33 @@ const dm = new SlashCommandBuilder()
 	.setRequired(true));
 commands.push(dm);
 
+const embed = new SlashCommandBuilder()
+.setName('embed')
+.setDescription('Send a embed in a channel through Gavin')
+.setDMPermission(false)
+//.setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+.addChannelOption(option =>
+	option
+	.setName('channel')
+	.setDescription('The channel to send the embed in.')
+	.setRequired(true))
+.addStringOption(option =>
+	option
+	.setName('title')
+	.setDescription('The title of the embed.')
+	.setRequired(true))
+.addStringOption(option =>
+	option
+	.setName('description')
+	.setDescription('The description/body of the embed.')
+	.setRequired(true))
+.addStringOption(option =>
+	option
+	.setName('color')
+	.setDescription('The color of the embed. Format as a 3 or 6 digit hex code with a preceding #.')
+	.setRequired(false));
+commands.push(embed);
+
 const msg = new SlashCommandBuilder()
 .setName('msg')
 .setDescription('Send a message in a channel through Gavin')
